@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: tucuju-nfe
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: CERT_B64
+        sync: false
+      - key: CERT_PASSWORD
+        sync: false
+      - key: CNPJS
+        sync: false
+      - key: AMBIENTE
+        value: "1"
+      - key: CUF
+        value: "16"
+      - key: EMPRESA
+        value: "Tucuju Farma"
+      - key: SUBTITULO
+        value: "Consulta NF-e"
