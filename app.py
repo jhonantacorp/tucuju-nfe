@@ -14,6 +14,8 @@ import tempfile, os, re, io, logging, gzip, base64, hashlib, time, datetime
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+VERSAO = "v3-evento-namespace"
+
 # ─── Configuracao ─────────────────────────────────────────────────────────────
 CERT_B64      = os.environ.get("CERT_B64", "")
 CERT_PASSWORD = os.environ.get("CERT_PASSWORD", "")
@@ -239,6 +241,7 @@ def registrar_ciencia(cnpj, chave):
     if not info:
         return False, "Servico de eventos da SEFAZ indisponivel no momento."
     env_xml = montar_env_evento(cnpj, chave)
+    log.info("[%s] envEvento enviado: %s", VERSAO, env_xml[:900])
     dados = '<nfeDadosMsg xmlns="' + NS_EVT + '">' + env_xml + '</nfeDadosMsg>'
     variantes = [dados]
     alt = ('<' + info["operacao"] + ' xmlns="' + NS_EVT + '">'
@@ -327,8 +330,8 @@ def diagnostico():
     """Mostra o que o servidor descobriu do servico de eventos (sem dados sensiveis)."""
     info = dict(descobrir_evento())
     info.pop("elementos", None)
-    return jsonify({"evento": info or "nao encontrado", "cnpjs": len(CNPJS),
-                    "certificado": bool(CERT_B64)})
+    return jsonify({"versao": VERSAO, "evento": info or "nao encontrado",
+                    "cnpjs": len(CNPJS), "certificado": bool(CERT_B64)})
 
 
 if __name__ == "__main__":
