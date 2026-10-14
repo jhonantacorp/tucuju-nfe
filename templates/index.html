@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Download XML NF-e</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0d0f12; --surface: #141720; --border: #252a36; --border2: #2e3548;
+      --accent: #00c896; --warn: #f0694a; --text: #e4e8f0; --muted: #7a849a;
+      --mono: 'IBM Plex Mono', monospace; --sans: 'IBM Plex Sans', sans-serif;
+    }
+    body { background: var(--bg); color: var(--text); font-family: var(--sans);
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      padding: 2rem 1rem; position: relative; }
+    body::before { content: ""; position: fixed; inset: 0;
+      background-image: linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 40px 40px; opacity: 0.3; pointer-events: none; }
+    .card { background: var(--surface); border: 1px solid var(--border2); border-radius: 4px;
+      padding: 2.5rem 2.8rem; width: 100%; max-width: 560px; position: relative; z-index: 1;
+      box-shadow: 0 0 60px rgba(0,200,150,0.04), 0 4px 32px rgba(0,0,0,0.4); }
+    .card::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--accent), #00f5c0 60%, transparent);
+      border-radius: 4px 4px 0 0; }
+    .logo-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 2rem; }
+    .logo-icon { width: 36px; height: 36px; background: var(--accent); border-radius: 3px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .logo-icon svg { width: 20px; height: 20px; fill: #0d0f12; }
+    .logo-text strong { font-size: 0.95rem; font-weight: 600; display: block; }
+    .logo-text span { font-size: 0.72rem; color: var(--muted); font-family: var(--mono); }
+    h1 { font-size: 1.35rem; font-weight: 300; margin-bottom: 0.4rem; }
+    h1 b { font-weight: 600; color: var(--accent); }
+    .subtitle { font-size: 0.82rem; color: var(--muted); margin-bottom: 2rem; line-height: 1.5; }
+    label { display: block; font-size: 0.72rem; font-family: var(--mono); color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem; }
+    .input-wrap { position: relative; margin-bottom: 0.4rem; }
+    input[type="text"] { width: 100%; background: var(--bg); border: 1px solid var(--border2);
+      border-radius: 3px; color: var(--text); font-family: var(--mono); font-size: 0.88rem;
+      letter-spacing: 0.05em; padding: 0.85rem 3rem 0.85rem 1rem; outline: none;
+      transition: border-color 0.2s; }
+    input[type="text"]:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,200,150,0.12); }
+    .clear-btn { position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer; color: var(--muted); display: none; font-size: 1rem; }
+    .clear-btn.visible { display: block; }
+    .digit-preview { display: flex; gap: 2px; flex-wrap: wrap; margin: 0.5rem 0 0.4rem; }
+    .digit-seg { height: 3px; flex: 1; background: var(--border2); border-radius: 99px; transition: background 0.15s; }
+    .digit-seg.filled { background: var(--accent); }
+    .counter { font-family: var(--mono); font-size: 0.7rem; color: var(--muted);
+      text-align: right; margin-bottom: 1.4rem; transition: color 0.2s; }
+    .counter.ok { color: var(--accent); }
+    button[type="submit"] { width: 100%; background: var(--accent); color: #0d0f12; border: none;
+      border-radius: 3px; font-family: var(--sans); font-size: 0.9rem; font-weight: 600;
+      padding: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      gap: 0.6rem; transition: background 0.2s; }
+    button[type="submit"]:hover:not(:disabled) { background: #00dba8; }
+    button[type="submit"]:disabled { background: var(--border2); color: var(--muted); cursor: not-allowed; }
+    .spinner { width: 16px; height: 16px; border: 2px solid rgba(13,15,18,0.3);
+      border-top-color: #0d0f12; border-radius: 50%; animation: spin 0.7s linear infinite; display: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .msg { margin-top: 1.2rem; padding: 0.85rem 1rem; border-radius: 3px; font-size: 0.82rem;
+      line-height: 1.5; display: none; border-left: 3px solid; }
+    .msg.error   { background: rgba(240,105,74,0.08); border-color: var(--warn); color: #f8a08e; display: block; }
+    .msg.success { background: rgba(0,200,150,0.08); border-color: var(--accent); color: #7ffad8; display: block; }
+    .footer { margin-top: 1.8rem; padding-top: 1.2rem; border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; }
+    .footer-note { font-size: 0.7rem; color: var(--muted); font-family: var(--mono); }
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent);
+      animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+    .history { margin-top: 1.6rem; }
+    .history-title { font-size: 0.68rem; font-family: var(--mono); color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.6rem; }
+    .history-list { list-style: none; }
+    .history-item { display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border); font-size: 0.75rem; font-family: var(--mono);
+      color: var(--muted); cursor: pointer; transition: color 0.15s; }
+    .history-item:hover { color: var(--accent); }
+    .history-item:last-child { border-bottom: none; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="logo-row">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM8 17h8v1.5H8V17zm0-3h8v1.5H8V14zm0-3h5v1.5H8V11z"/></svg>
+    </div>
+    <div class="logo-text">
+      <strong>{{EMPRESA}}</strong>
+      <span>{{SUBTITULO}}</span>
+    </div>
+  </div>
+
+  <h1>Baixar <b>XML</b> da Nota Fiscal</h1>
+  <p class="subtitle">Cole a chave de acesso (44 dígitos) para baixar o XML completo da NF-e.</p>
+
+  <label for="chave">Chave de acesso</label>
+  <div class="input-wrap">
+    <input type="text" id="chave"
+      placeholder="0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000"
+      autocomplete="off" spellcheck="false" maxlength="54" />
+    <button class="clear-btn" id="clearBtn">&#10005;</button>
+  </div>
+  <div class="digit-preview" id="preview"></div>
+  <div class="counter" id="counter">0 / 44 dígitos</div>
+
+  <button type="submit" id="submitBtn" disabled>
+    <span id="btnText">Baixar XML</span>
+    <div class="spinner" id="spinner"></div>
+  </button>
+
+  <div class="msg" id="msg"></div>
+
+  <div class="footer">
+    <div class="footer-note" id="footerNote">Aguardando chave de acesso…</div>
+    <div class="status-dot"></div>
+  </div>
+
+  <div class="history" id="historySection" style="display:none">
+    <div class="history-title">Consultadas nesta sessão</div>
+    <ul class="history-list" id="historyList"></ul>
+  </div>
+</div>
+
+<script>
+  const input = document.getElementById("chave");
+  const counter = document.getElementById("counter");
+  const submitBtn = document.getElementById("submitBtn");
+  const spinner = document.getElementById("spinner");
+  const btnText = document.getElementById("btnText");
+  const msgEl = document.getElementById("msg");
+  const preview = document.getElementById("preview");
+  const clearBtn = document.getElementById("clearBtn");
+  const footerNote = document.getElementById("footerNote");
+  const histSec = document.getElementById("historySection");
+  const histList = document.getElementById("historyList");
+
+  for (let i = 0; i < 44; i++) {
+    const s = document.createElement("div"); s.className = "digit-seg"; preview.appendChild(s);
+  }
+  const segs = preview.querySelectorAll(".digit-seg");
+
+  function digits() { return input.value.replace(/\D/g, ""); }
+
+  function updateUI() {
+    const len = digits().length;
+    counter.textContent = len + " / 44 dígitos";
+    counter.className = len === 44 ? "counter ok" : "counter";
+    segs.forEach((s, i) => s.className = "digit-seg" + (i < len ? " filled" : ""));
+    clearBtn.className = len > 0 ? "clear-btn visible" : "clear-btn";
+    submitBtn.disabled = len !== 44;
+    footerNote.textContent = len === 0 ? "Aguardando chave de acesso…" :
+      len < 44 ? "Faltam " + (44 - len) + " dígitos" :
+      "Chave válida — pronto para consultar";
+  }
+
+  input.addEventListener("input", () => {
+    const d = digits().slice(0, 44);
+    input.value = d.match(/.{1,4}/g) ? d.match(/.{1,4}/g).join(" ") : "";
+    msgEl.className = "msg"; updateUI();
+  });
+
+  clearBtn.addEventListener("click", () => {
+    input.value = ""; input.focus(); msgEl.className = "msg"; updateUI();
+  });
+
+  function addHistory(chave) {
+    const li = document.createElement("li");
+    li.className = "history-item";
+    li.textContent = chave.slice(0, 8) + "…" + chave.slice(-8);
+    li.title = chave;
+    li.onclick = () => { input.value = chave.match(/.{1,4}/g).join(" "); msgEl.className = "msg"; updateUI(); };
+    histList.prepend(li);
+    histSec.style.display = "block";
+  }
+
+  submitBtn.addEventListener("click", async () => {
+    const chave = digits();
+    if (chave.length !== 44) return;
+    msgEl.className = "msg";
+    submitBtn.disabled = true;
+    spinner.style.display = "block";
+    btnText.textContent = "Consultando SEFAZ…";
+
+    try {
+      const resp = await fetch("/consultar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chave: chave }),
+      });
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({ erro: "Erro desconhecido." }));
+        msgEl.className = "msg error";
+        msgEl.textContent = err.erro;
+        return;
+      }
+      const blob = await resp.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = "NF-e_" + chave + ".xml"; a.click();
+      URL.revokeObjectURL(url);
+      msgEl.className = "msg success";
+      msgEl.textContent = "XML baixado com sucesso: NF-e_" + chave + ".xml";
+      addHistory(chave);
+    } catch (e) {
+      msgEl.className = "msg error";
+      msgEl.textContent = "Não foi possível conectar ao servidor. Tente novamente.";
+    } finally {
+      spinner.style.display = "none";
+      btnText.textContent = "Baixar XML";
+      updateUI();
+    }
+  });
+
+  input.addEventListener("keydown", e => {
+    if (e.key === "Enter" && !submitBtn.disabled) submitBtn.click();
+  });
+
+  updateUI();
+</script>
+</body>
+</html>
