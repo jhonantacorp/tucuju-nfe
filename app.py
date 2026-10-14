@@ -210,10 +210,13 @@ def assinar(evento_el, inf_el):
 
 
 def montar_env_evento(cnpj, chave):
+    """Monta o lote com 1 evento de Ciencia da Operacao.
+    O <evento> e criado e assinado como documento proprio, para que o
+    namespace da NF-e fique declarado na propria tag <evento>. A SEFAZ
+    recorta cada <evento> do lote para validar; sem essa declaracao o
+    hash muda e a assinatura e rejeitada (cStat 297)."""
     N = lambda tag: "{%s}%s" % (NS_NFE, tag)
-    env = etree.Element(N("envEvento"), nsmap={None: NS_NFE}, versao="1.00")
-    etree.SubElement(env, N("idLote")).text = str(int(time.time()))[-15:]
-    evento = etree.SubElement(env, N("evento"), versao="1.00")
+    evento = etree.Element(N("evento"), nsmap={None: NS_NFE}, versao="1.00")
     inf = etree.SubElement(evento, N("infEvento"), Id="ID210210" + chave + "01")
     dh = (datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=-3)))
           - datetime.timedelta(minutes=1)).strftime("%Y-%m-%dT%H:%M:%S-03:00")
@@ -224,7 +227,10 @@ def montar_env_evento(cnpj, chave):
     det = etree.SubElement(inf, N("detEvento"), versao="1.00")
     etree.SubElement(det, N("descEvento")).text = "Ciencia da Operacao"
     assinar(evento, inf)
-    return etree.tostring(env, encoding="unicode")
+    evento_xml = etree.tostring(evento, encoding="unicode")
+    id_lote = str(int(time.time()))[-15:]
+    return ('<envEvento xmlns="' + NS_NFE + '" versao="1.00">'
+            '<idLote>' + id_lote + '</idLote>' + evento_xml + '</envEvento>')
 
 
 def registrar_ciencia(cnpj, chave):
