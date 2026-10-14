@@ -14,7 +14,7 @@ import tempfile, os, re, io, logging, gzip, base64, hashlib, time, datetime
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-VERSAO = "v3-evento-namespace"
+VERSAO = "v4-c14n-corrigido"
 
 # ─── Configuracao ─────────────────────────────────────────────────────────────
 CERT_B64      = os.environ.get("CERT_B64", "")
@@ -177,13 +177,21 @@ def descobrir_evento():
     return _EVT_INFO
 
 
+def c14n(el):
+    """C14N inclusiva de um trecho do documento.
+    etree.tostring(el, method="c14n") em elementos internos gera xmlns=""
+    espurios nos netos (defeito do lxml); serializar e reabrir o trecho como
+    documento proprio produz a forma canonica correta."""
+    return etree.tostring(etree.fromstring(etree.tostring(el)), method="c14n")
+
+
 def assinar(evento_el, inf_el):
     c = certificado()
     from cryptography.hazmat.primitives import hashes, serialization
     from cryptography.hazmat.primitives.asymmetric import padding
 
     digest = base64.b64encode(
-        hashlib.sha1(etree.tostring(inf_el, method="c14n")).digest()).decode()
+        hashlib.sha1(c14n(inf_el)).digest()).decode()
 
     S = lambda tag: "{%s}%s" % (NS_DS, tag)
     sig = etree.SubElement(evento_el, S("Signature"), nsmap={None: NS_DS})
@@ -202,7 +210,7 @@ def assinar(evento_el, inf_el):
                      Algorithm="http://www.w3.org/2000/09/xmldsig#sha1")
     etree.SubElement(ref, S("DigestValue")).text = digest
 
-    valor = c["pk"].sign(etree.tostring(si, method="c14n"),
+    valor = c["pk"].sign(c14n(si),
                          padding.PKCS1v15(), hashes.SHA1())
     etree.SubElement(sig, S("SignatureValue")).text = base64.b64encode(valor).decode()
     ki = etree.SubElement(sig, S("KeyInfo"))
